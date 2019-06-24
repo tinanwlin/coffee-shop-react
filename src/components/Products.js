@@ -1,43 +1,26 @@
 import React, { Component } from 'react';
 import Checkbox from './Checkbox';
+import { connect } from 'react-redux';
+import { updateSelectedProductList } from '../actions/fetchAction';
 
 class Products extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      products: [
-        {id: 1, name: 'Americano', price: 3.5},
-        {id: 2, name: 'Caffé Latte', price: 4.5},
-        {id: 3, name: 'Caffé macchiato', price: 4},
-        {id: 4, name: 'Cappuccino', price: 4.5},
-        {id: 5, name: 'Frappuccino', price: 5}
-      ],
-      selectedProducts: []
-    };
-  }
-
 
   handleChange = (e) => {
     const selectedProduct = e.target.value;
     const checkedProduct = e.target.checked;
 
-    this.setState((prevState) => {
-      let selectedProductList = [...prevState.selectedProducts];
-      if (checkedProduct) {
-        const newCheckedProduct = prevState.products.filter(product => {
-          return product.id.toString() === selectedProduct;
-        })
-        selectedProductList = selectedProductList.concat(newCheckedProduct);
-      } else {
-        selectedProductList = selectedProductList.filter(product => {
-          return product.id.toString() !== selectedProduct;
-        })
-      }
-      return {
-        ...prevState,
-        selectedProducts: selectedProductList
-      }
-    });
+    let selectedProductList = [...this.props.selectedProducts];
+    if (checkedProduct) {
+      const newCheckedProduct = this.props.products.filter(product => {
+        return product.id.toString() === selectedProduct;
+      })
+      selectedProductList = selectedProductList.concat(newCheckedProduct);
+    } else {
+      selectedProductList = selectedProductList.filter(product => {
+        return product.id.toString() !== selectedProduct;
+      })
+    }
+    this.props.updateSelectedProductList(selectedProductList);
   }
 
   handleClick = (e) => {
@@ -47,12 +30,14 @@ class Products extends Component {
   }
 
   render() {
-    const productList = this.state.products.map(product => {
+    const selectedProductIds = [...this.props.selectedProducts].map(product => product.id);
+    const productList = this.props.products.map(product => {
       return (
         <label key={product.id}>
           <Checkbox
             name={`${product.name} $${product.price}`}
             value={product.id}
+            checked={selectedProductIds.includes(product.id) ? "checked" : null}
             onChange={this.handleChange} />
           </label>
       )
@@ -69,4 +54,15 @@ class Products extends Component {
   }
 }
 
-export default Products;
+const mapStateToProps = (state) => {
+  return {
+    products: state.products,
+    selectedProducts: state.selectedProducts
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  updateSelectedProductList: (selectedProducts) => dispatch(updateSelectedProductList(selectedProducts))
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Products);

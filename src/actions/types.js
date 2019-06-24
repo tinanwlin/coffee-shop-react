@@ -1,0 +1,1 @@
+export const FETCHED_PRODUCT = "FETCHED_PRODUCT";
